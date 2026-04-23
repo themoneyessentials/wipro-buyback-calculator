@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wipro Buyback 2026 — Profit Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f3;
+      color: #1a1a18;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a18;
+      margin-bottom: 4px;
+    }
+    .header p {
+      font-size: 14px;
+      color: #6b6b67;
+    }
+
+    /* Fixed info strip */
+    .info-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      background: #fff;
+      border: 1px solid #e2e2dc;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .info-item label {
+      display: block;
+      font-size: 11px;
+      color: #6b6b67;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 3px;
+    }
+    .info-item span {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a18;
+    }
+
+    /* Input grid */
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 480px) {
+      .input-grid { grid-template-columns: 1fr; }
+      .info-strip { grid-template-columns: 1fr; }
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #44443f;
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 16px;
+      border: 1px solid #d3d1c7;
+      border-radius: 8px;
+      background: #fff;
+      color: #1a1a18;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus {
+      border-color: #378add;
+      box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
+    }
+    .field .hint {
+      font-size: 11px;
+      color: #888780;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* Warning */
+    .warn {
+      display: none;
+      background: #faeeda;
+      color: #854f0b;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    /* Summary cards */
+    .summary {
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 480px) {
+      .summary { grid-template-columns: 1fr 1fr; }
+    }
+    .card {
+      background: #f1efe8;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .card label {
+      display: block;
+      font-size: 11px;
+      color: #6b6b67;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .card .val {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a18;
+    }
+    .card.profit .val { color: #0f6e56; }
+    .card.loss .val   { color: #a32d2d; }
+
+    /* Scenario table section */
+    .table-section {
+      display: none;
+      background: #fff;
+      border: 1px solid #e2e2dc;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+    .table-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #44443f;
+      margin-bottom: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 520px;
+    }
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b6b67;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 6px 10px;
+      border-bottom: 1px solid #e2e2dc;
+    }
+    tbody td {
+      padding: 7px 10px;
+      color: #1a1a18;
+      border-bottom: 1px solid #f1efe8;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr.highlight td { background: #e6f1fb; font-weight: 500; }
+    .pos { color: #0f6e56; font-weight: 600; }
+    .neg { color: #a32d2d; font-weight: 600; }
+    .star { font-size: 11px; margin-left: 4px; }
+
+    /* Note */
+    .note {
+      display: none;
+      font-size: 12px;
+      color: #888780;
+      line-height: 1.7;
+      border-top: 1px solid #e2e2dc;
+      padding-top: 1rem;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: #b4b2a9;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Wipro Buyback 2026 — Profit Calculator</h1>
+    <p>Enter your purchase details to estimate profit across different acceptance ratios</p>
+  </div>
+
+  <div class="info-strip">
+    <div class="info-item"><label>Buyback price</label><span>₹250 / share</span></div>
+    <div class="info-item"><label>Total shares</label><span>60 Crore</span></div>
+    <div class="info-item"><label>Total buyback size</label><span>₹15,000 Crore</span></div>
+  </div>
+
+  <div class="input-grid">
+    <div class="field">
+      <label>Shares you own / plan to buy</label>
+      <input type="number" id="qty" placeholder="e.g. 800" min="1" oninput="calc()" />
+      <p class="hint">Keep investment ≤ ₹2 lakh for retail quota</p>
+    </div>
+    <div class="field">
+      <label>Your buy price (₹ per share)</label>
+      <input type="number" id="price" placeholder="e.g. 230" min="1" oninput="calc()" />
+    </div>
+    <div class="field">
+      <label>Expected post-buyback price (₹)</label>
+      <input type="number" id="postprice" placeholder="e.g. 240" min="1" oninput="calc()" />
+      <p class="hint">Market price you expect after buyback closes</p>
+    </div>
+    <div class="field">
+      <label>Your acceptance ratio guess (%)</label>
+      <input type="number" id="myar" placeholder="e.g. 30" min="1" max="100" oninput="calc()" />
+      <p class="hint">Retail typically sees 15–40%; your scenario is marked ★</p>
+    </div>
+  </div>
+
+  <div class="warn" id="warn">
+    ⚠ Your investment exceeds ₹2 lakh — you may not qualify for the retail (small shareholder) quota. Only holdings valued ≤ ₹2 lakh on the record date get priority allocation.
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="card"><label>Total investment</label><div class="val" id="r-invest">—</div></div>
+    <div class="card"><label>Shares accepted</label><div class="val" id="r-accepted">—</div></div>
+    <div class="card"><label>Remaining shares</label><div class="val" id="r-remaining">—</div></div>
+    <div class="card"><label>Profit from buyback</label><div class="val" id="r-bbprofit">—</div></div>
+    <div class="card"><label>Remaining shares value</label><div class="val" id="r-remval">—</div></div>
+    <div class="card"><label>Total profit / loss</label><div class="val" id="r-total">—</div></div>
+  </div>
+
+  <div class="table-section" id="tbl-section">
+    <h3>Scenario table — profit at every acceptance ratio</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>AR %</th>
+          <th>Shares accepted</th>
+          <th>Buyback profit (₹)</th>
+          <th>Remaining value (₹)</th>
+          <th>Total P&amp;L (₹)</th>
+          <th>Return %</th>
+        </tr>
+      </thead>
+      <tbody id="ar-body"></tbody>
+    </table>
+  </div>
+
+  <p class="note" id="note">
+    <strong>How it works:</strong> Buyback profit = (₹250 − your buy price) × shares accepted in buyback.
+    Remaining value = leftover shares × expected post-buyback market price.
+    Total P&amp;L = buyback profit + gain/loss on remaining shares.
+    <br><br>
+    <strong>Retail quota:</strong> Shareholders with investment ≤ ₹2 lakh as on the record date are classified as small shareholders and get a reserved 15% of the total buyback. The acceptance ratio for retail tends to be higher than the general category.
+    <br><br>
+    This calculator is for educational/informational purposes only and does not constitute financial advice. Please consult a SEBI-registered advisor before making investment decisions.
+  </p>
+
+  <footer>Data sourced from Wipro Limited Board Resolution dated April 16, 2026 &nbsp;|&nbsp; Not affiliated with Wipro Limited</footer>
+
+</div>
+
+<script>
+  const BB_PRICE = 250;
+
+  function fmtINR(n) {
+    return '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
+  }
+  function fmtSigned(n) {
+    return (n >= 0 ? '+₹' : '−₹') + Math.abs(Math.round(n)).toLocaleString('en-IN');
+  }
+  function fmtPct(n) {
+    return (n >= 0 ? '+' : '') + parseFloat(n).toFixed(2) + '%';
+  }
+
+  function calc() {
+    const qty      = parseFloat(document.getElementById('qty').value);
+    const price    = parseFloat(document.getElementById('price').value);
+    const post     = parseFloat(document.getElementById('postprice').value);
+    const myar     = parseFloat(document.getElementById('myar').value);
+
+    const warnEl   = document.getElementById('warn');
+    const summaryEl = document.getElementById('summary');
+    const tblEl    = document.getElementById('tbl-section');
+    const noteEl   = document.getElementById('note');
+
+    if (!qty || !price) {
+      summaryEl.style.display = 'none';
+      tblEl.style.display     = 'none';
+      noteEl.style.display    = 'none';
+      warnEl.style.display    = 'none';
+      return;
+    }
+
+    const invest   = qty * price;
+    warnEl.style.display = invest > 200000 ? 'block' : 'none';
+
+    const postPrice = post  || price;
+    const ar        = myar  || 30;
+
+    const accepted  = Math.floor(qty * ar / 100);
+    const remaining = qty - accepted;
+    const bbProfit  = (BB_PRICE - price) * accepted;
+    const remVal    = remaining * postPrice;
+    const remPL     = remVal - remaining * price;
+    const totalPL   = bbProfit + remPL;
+    const retPct    = invest > 0 ? (totalPL / invest * 100) : 0;
+
+    setCard('r-invest',    fmtINR(invest),       null);
+    setCard('r-accepted',  accepted.toLocaleString('en-IN') + ' shares', null);
+    setCard('r-remaining', remaining.toLocaleString('en-IN') + ' shares', null);
+    setCard('r-bbprofit',  fmtSigned(bbProfit),  bbProfit);
+    setCard('r-remval',    fmtINR(remVal),        null);
+    setCard('r-total',     fmtSigned(totalPL),    totalPL);
+
+    summaryEl.style.display = 'grid';
+    noteEl.style.display    = 'block';
+
+    // Build scenario table
+    const ratios = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    const tbody  = document.getElementById('ar-body');
+    tbody.innerHTML = '';
+
+    ratios.forEach(r => {
+      const acc   = Math.floor(qty * r / 100);
+      const rem   = qty - acc;
+      const bbP   = (BB_PRICE - price) * acc;
+      const rV    = rem * postPrice;
+      const tot   = bbP + (rV - rem * price);
+      const pct   = invest > 0 ? (tot / invest * 100) : 0;
+      const isMe  = Math.round(ar / 10) * 10 === r;
+
+      const tr = document.createElement('tr');
+      if (isMe) tr.className = 'highlight';
+
+      tr.innerHTML =
+        `<td>${r}%${isMe ? '<span class="star">★</span>' : ''}</td>` +
+        `<td>${acc.toLocaleString('en-IN')}</td>` +
+        `<td class="${bbP >= 0 ? 'pos' : 'neg'}">${fmtSigned(bbP)}</td>` +
+        `<td>${fmtINR(rV)}</td>` +
+        `<td class="${tot >= 0 ? 'pos' : 'neg'}">${fmtSigned(tot)}</td>` +
+        `<td class="${pct >= 0 ? 'pos' : 'neg'}">${fmtPct(pct)}</td>`;
+
+      tbody.appendChild(tr);
+    });
+
+    tblEl.style.display = 'block';
+  }
+
+  function setCard(id, text, signVal) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    const card = el.parentElement;
+    card.className = 'card';
+    if (signVal !== null) {
+      if (signVal > 0)  card.classList.add('profit');
+      if (signVal < 0)  card.classList.add('loss');
+    }
+  }
+</script>
+</body>
+</html>
